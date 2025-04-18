@@ -1,0 +1,19 @@
+{
+  "name": "personal-blog",
+  "version": "1.0.0",
+  "description": "A personal blog website showcasing my avatar, introduction, life photos, and social media links.",
+  "main": "src/index.html",
+  "scripts": {
+    "build": "postcss src/styles/tailwind.css -o src/styles/output.css",
+    "watch": "postcss src/styles/tailwind.css -o src/styles/output.css --watch"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.0.0",
+    "postcss": "^8.0.0",
+    "autoprefixer": "^10.0.0"
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

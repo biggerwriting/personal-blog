@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the personal blog */
+body {
+    @apply bg-gray-100 text-gray-800 font-sans;
+}
+
+.header {
+    @apply text-center py-10;
+}
+
+.avatar {
+    @apply rounded-full w-32 h-32 mx-auto mb-4;
+}
+
+.introduction {
+    @apply text-lg max-w-2xl mx-auto px-4;
+}
+
+.photo-gallery {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4;
+}
+
+.photo {
+    @apply rounded-lg overflow-hidden shadow-lg;
+}
+
+.social-links {
+    @apply flex justify-center space-x-4 mt-4;
+}
+
+.social-icon {
+    @apply w-8 h-8;
+}
