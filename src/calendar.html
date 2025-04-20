@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar Template</title>
+    <meta name="description" content="Create a printable monthly calendar with customizable dates using this interactive tool. Export the calendar as an image for easy sharing or printing.">
+    <meta name="keywords" content="printable calendar, monthly calendar, customizable calendar, export calendar, calendar image, HTML5 calendar, canvas calendar">
+    <meta name="author" content="Your Name">
+    <title>Printable Monthly Calendar with Customizable Dates</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,7 +32,8 @@
     </style>
 </head>
 <body>
-    <h1>Monthly Calendar</h1>
+    <h1>Printable Monthly Calendar</h1>
+    <p>Create a customizable monthly calendar. You can adjust the dates and export the calendar as an image for printing or sharing.</p>
     <canvas id="calendarCanvas" width="800" height="600"></canvas>
     <br>
     <button id="downloadBtn">Download as Image</button>
@@ -46,7 +50,7 @@
             const startDay = 2; // Example: April starts on a Tuesday
 
             // Background
-            ctx.fillStyle = "#f9f9f9";
+            ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Title
