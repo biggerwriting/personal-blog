@@ -55,3 +55,5 @@ personal-blog
 ## License
 
 This project is licensed under the MIT License.
+
+- how to automatically deploy on vercel.com?
