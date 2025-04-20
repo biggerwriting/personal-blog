@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create a printable monthly calendar of April 2025. Export the calendar as an image for easy sharing or printing.">
+    <meta name="keywords" content="printable calendar, monthly calendar, customizable calendar, export calendar, calendar image, HTML5 calendar, canvas calendar">
+    <meta name="author" content="Your Name">
+    <title>Printable Calendar May 2025</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Printable Monthly Calendar</h1>
+    <p>Create a customizable monthly calendar. You can adjust the dates and export the calendar as an image for printing or sharing.</p>
+    <canvas id="calendarCanvas" width="800" height="600"></canvas>
+    <br>
+    <button id="downloadBtn">Download as Image</button>
+
+    <script>
+        const canvas = document.getElementById('calendarCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Draw the calendar
+        function drawCalendar() {
+            const month = "May 2025"; // Example month
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const numDays = 31; // Example: April has 30 days
+            const startDay = 4; // Example: April starts on a Tuesday
+
+            // Background
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Title
+            ctx.fillStyle = "#333";
+            ctx.font = "28px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(month, canvas.width / 2, 50);
+
+            // Draw days of the week
+            ctx.font = "20px Arial";
+            const cellWidth = canvas.width / 7;
+            const cellHeight = 80;
+            for (let i = 0; i < days.length; i++) {
+                ctx.fillStyle = "#555";
+                ctx.fillText(days[i], cellWidth * i + cellWidth / 2, 100);
+            }
+
+            // Draw calendar grid
+            ctx.strokeStyle = "#ccc";
+            ctx.lineWidth = 1;
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 7; col++) {
+                    const x = col * cellWidth;
+                    const y = 120 + row * cellHeight;
+                    ctx.strokeRect(x, y, cellWidth, cellHeight);
+                }
+            }
+
+            // Fill in the days
+            ctx.font = "18px Arial";
+            ctx.fillStyle = "#000";
+            let day = 1;
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 7; col++) {
+                    if (row === 0 && col < startDay) {
+                        continue; // Skip empty cells at the start
+                    }
+                    if (day > numDays) {
+                        break; // Stop if all days are filled
+                    }
+                    const x = col * cellWidth + cellWidth / 2;
+                    const y = 120 + row * cellHeight + cellHeight / 2;
+                    ctx.fillText(day, x, y);
+                    day++;
+                }
+            }
+        }
+
+        // Export canvas as image
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'calendar.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+
+        // Draw the calendar
+        drawCalendar();
+    </script>
+</body>
+</html>
