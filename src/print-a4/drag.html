@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,13 +13,13 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .element {
             position: absolute;
             border: 1px dashed #999;
             cursor: move;
         }
-        
+
         .resize-handle {
             width: 10px;
             height: 10px;
@@ -28,12 +29,13 @@
             bottom: 0;
             cursor: nwse-resize;
         }
-        
+
         .controls {
             margin: 10px 0;
         }
     </style>
 </head>
+
 <body>
     <div class="controls">
         <button onclick="addElement('text')">添加文本</button>
@@ -47,24 +49,28 @@
         let isDragging = false;
         let isResizing = false;
         let startX, startY, startWidth, startHeight;
-        
+
         // 添加元素到画布
         function addElement(type) {
             const canvas = document.getElementById('canvas');
             const element = document.createElement('div');
             element.className = 'element';
-            
+
             // 设置初始位置和大小
             element.style.left = '100px';
             element.style.top = '100px';
             element.style.width = '150px';
             element.style.height = '100px';
-            
+
             // 根据类型设置内容
-            switch(type) {
+            switch (type) {
                 case 'text':
                     element.innerHTML = '<div contenteditable="true">双击编辑文本</div>';
                     element.style.backgroundColor = '#fff';
+                    // 阻止事件冒泡到父元素
+                    element.querySelector('div').addEventListener('mousedown', function (e) {
+                        e.stopPropagation();
+                    });
                     break;
                 case 'image':
                     element.innerHTML = '<img src="https://via.placeholder.com/150x100" style="width:100%;height:100%;object-fit:cover;">';
@@ -73,33 +79,33 @@
                     element.style.backgroundColor = '#e0e0e0';
                     break;
             }
-            
+
             // 添加调整大小手柄
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'resize-handle';
             element.appendChild(resizeHandle);
-            
+
             // 添加事件监听
             element.addEventListener('mousedown', startDrag);
             resizeHandle.addEventListener('mousedown', startResize);
-            
+
             canvas.appendChild(element);
             selectElement(element);
         }
-        
+
         // 选择元素
         function selectElement(element) {
-            if(selectedElement) {
+            if (selectedElement) {
                 selectedElement.style.border = '1px dashed #999';
             }
             selectedElement = element;
             element.style.border = '2px solid #09f';
         }
-        
+
         // 开始拖动
         function startDrag(e) {
-            if(e.target.className === 'resize-handle') return;
-            
+            if (e.target.className === 'resize-handle') return;
+
             isDragging = true;
             selectedElement = e.currentTarget;
             startX = e.clientX;
@@ -108,30 +114,30 @@
             document.addEventListener('mouseup', endDrag);
             e.preventDefault();
         }
-        
+
         // 拖动过程
         function drag(e) {
-            if(isDragging) {
+            if (isDragging) {
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-                
+
                 selectedElement.style.left = (parseInt(selectedElement.style.left) + dx) + 'px';
                 selectedElement.style.top = (parseInt(selectedElement.style.top) + dy) + 'px';
-                
+
                 startX = e.clientX;
                 startY = e.clientY;
-            } else if(isResizing) {
+            } else if (isResizing) {
                 const dx = e.clientX - startX;
                 const newWidth = startWidth + dx;
                 const newHeight = startHeight + dx * (startHeight / startWidth);
-                
-                if(newWidth > 50 && newHeight > 50) {
+
+                if (newWidth > 50 && newHeight > 50) {
                     selectedElement.style.width = newWidth + 'px';
                     selectedElement.style.height = newHeight + 'px';
                 }
             }
         }
-        
+
         // 开始调整大小
         function startResize(e) {
             isResizing = true;
@@ -144,7 +150,7 @@
             document.addEventListener('mouseup', endDrag);
             e.preventDefault();
         }
-        
+
         // 结束操作
         function endDrag() {
             isDragging = false;
@@ -152,11 +158,11 @@
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('mouseup', endDrag);
         }
-        
+
         // 画布点击事件
-        document.getElementById('canvas').addEventListener('click', function(e) {
-            if(e.target === this) {
-                if(selectedElement) {
+        document.getElementById('canvas').addEventListener('click', function (e) {
+            if (e.target === this) {
+                if (selectedElement) {
                     selectedElement.style.border = '1px dashed #999';
                     selectedElement = null;
                 }
@@ -164,4 +170,5 @@
         });
     </script>
 </body>
+
 </html>
