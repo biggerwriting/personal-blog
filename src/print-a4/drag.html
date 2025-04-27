@@ -34,6 +34,7 @@
             margin: 10px 0;
         }
     </style>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -173,68 +174,20 @@
         // 导出画布为图片
         function exportCanvas() {
             const canvas = document.getElementById('canvas');
-            const elements = canvas.querySelectorAll('.element');
 
-            // 设置DPI (300dpi适合打印)
-            const dpi = 300;
-            const scale = dpi / 96; // 96是标准屏幕DPI
-
-            // 创建临时canvas
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.offsetWidth;
-            tempCanvas.height = canvas.offsetHeight;
-            const ctx = tempCanvas.getContext('2d');
-
-            // 设置高清渲染质量
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            // 绘制背景
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-            // 绘制所有元素
-            elements.forEach(element => {
-                const rect = element.getBoundingClientRect();
-                const canvasRect = canvas.getBoundingClientRect();
-
-                const x = (rect.left - canvasRect.left) * scale;
-                const y = (rect.top - canvasRect.top) * scale;
-                const width = rect.width * scale;
-                const height = rect.height * scale;
-
-                // 创建临时canvas绘制元素内容
-                const elementCanvas = document.createElement('canvas');
-                elementCanvas.width = width;
-                elementCanvas.height = height;
-                const elementCtx = elementCanvas.getContext('2d');
-
-                // 绘制元素背景
-                elementCtx.fillStyle = window.getComputedStyle(element).backgroundColor;
-                elementCtx.fillRect(0, 0, width, height);
-
-                // 绘制元素内容
-                if (element.querySelector('img')) {
-                    const img = element.querySelector('img');
-                    elementCtx.imageSmoothingEnabled = true;
-                    elementCtx.imageSmoothingQuality = 'high';
-                    elementCtx.drawImage(img, 0, 0, width, height);
-                } else if (element.querySelector('div')) {
-                    const text = element.querySelector('div');
-                    elementCtx.font = '14px Arial';
-                    elementCtx.fillStyle = 'black';
-                    elementCtx.fillText(text.textContent, 10 * scale, 20 * scale);
-                }
-
-                // 将元素绘制到主canvas
-                ctx.drawImage(elementCanvas, x, y, width, height);
+            // 使用html2canvas库直接截图
+            html2canvas(canvas, {
+                scale: 2, // 提高分辨率
+                logging: false,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = 'canvas-snapshot.png';
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
             });
-
-            // 创建下载链接
-            const link = document.createElement('a');
-            link.download = 'canvas-export.png';
-            link.href = tempCanvas.toDataURL('image/png', 1.0); // 最高质量
-            link.click();
         }
     </script>
 </body>
