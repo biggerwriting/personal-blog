@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A4图片编辑器</title>
+    <style>
+        /* A4尺寸设置 */
+        #a4-canvas {
+            width: 210mm;
+            height: 297mm;
+            border: 1px solid #ccc;
+            position: relative;
+            background: white;
+            margin: 0 auto;
+        }
+        /* 可拖拽图片样式 */
+        .draggable-img {
+            position: absolute;
+            cursor: move;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        /* 控制按钮样式 */
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <input type="file" id="image-upload" accept="image/*">
+        <button onclick="exportCanvas()">导出图片</button>
+    </div>
+    <div id="a4-canvas"></div>
+
+    <script>
+        // 初始化变量
+        let currentImage = null;
+        let isDragging = false;
+        let startX, startY, offsetX, offsetY;
+        let translateX = 0;
+        let translateY = 0;
+
+        // 图片上传处理
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    addImageToCanvas(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 添加图片到画布
+        function addImageToCanvas(src) {
+            const img = new Image();
+            img.src = src;
+            img.classList.add('draggable-img');
+            img.style.left = '50px';
+            img.style.top = '50px';
+            // img.style.width = '100px';
+            img.style.transform = `translate(${translateX}px, ${translateY}px)`;
+            
+            // 添加事件监听器
+            img.addEventListener('mousedown', startDrag);
+            img.addEventListener('mousemove', drag);
+            img.addEventListener('mouseup', endDrag);
+            img.addEventListener('mouseleave', endDrag);
+            
+            document.getElementById('a4-canvas').appendChild(img);
+            currentImage = img;
+        }
+
+        // 拖拽功能实现
+        function startDrag(e) {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = currentImage.getBoundingClientRect();
+            // offsetX = currentImage.offsetLeft;
+            // offsetY = currentImage.offsetTop;
+            offsetX = rect.left;
+            offsetY = rect.top;
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                // currentImage.style.left = `${offsetX + dx}px`;
+                // currentImage.style.top = `${offsetY + dy}px`;
+                translateX = offsetX + dx - currentImage.offsetParent.offsetLeft;
+                translateY = offsetY + dy - currentImage.offsetParent.offsetTop;
+                requestAnimationFrame(updatePosition);
+            }
+        }
+
+        function updatePosition() {
+            if (currentImage) {
+                currentImage.style.transform = `translate(${translateX}px, ${translateY}px)`;
+            }
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        // 导出画布为图片
+        function exportCanvas() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const a4Canvas = document.getElementById('a4-canvas');
+            
+            // 设置canvas尺寸为A4
+            canvas.width = 2480; // 300dpi A4宽度
+            canvas.height = 3508; // 300dpi A4高度
+            
+            // 绘制背景
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制图片
+            const img = currentImage;
+            const scaleX = canvas.width / a4Canvas.offsetWidth;
+            const scaleY = canvas.height / a4Canvas.offsetHeight;
+            
+            // ctx.drawImage(
+            //     img,
+            //     img.offsetLeft * scaleX,
+            //     img.offsetTop * scaleY,
+            //     img.width * scaleX,
+            //     img.height * scaleY
+            // );
+                 // 需要调整导出时的坐标计算，使用 translateX 和 translateY
+            ctx.drawImage(
+                img,
+                translateX * scaleX,
+                translateY * scaleY,
+                img.width * scaleX,
+                img.height * scaleY
+            );
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.download = 'a4-image.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
