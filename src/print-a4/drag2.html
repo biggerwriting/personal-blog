@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>可拖拽图片画布</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -12,21 +13,22 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .draggable-image {
             position: absolute;
             max-width: 200px;
             max-height: 200px;
             cursor: move;
             user-select: none;
-            touch-action: none; /* 防止触摸干扰 */
+            touch-action: none;
+            /* 防止触摸干扰 */
         }
-        
+
         .controls {
             text-align: center;
             margin: 20px;
         }
-        
+
         button {
             padding: 10px 20px;
             margin: 0 10px;
@@ -38,13 +40,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="controls">
         <input type="file" id="imageInput" accept="image/*" hidden>
         <button onclick="document.getElementById('imageInput').click()">添加图片</button>
         <button onclick="exportCanvas()">导出图片</button>
     </div>
-    
+
     <div id="canvas-container"></div>
 
     <script>
@@ -69,19 +72,19 @@
         // 图片加载与定位
         function addImageToCanvas(imageSrc) {
             const img = new Image();
-            img.onload = function() {
+            img.onload = function () {
                 img.classList.add('draggable-image');
-                
+
                 // 初始居中定位
-                const left = (containerRect.width - img.width) / 2;
-                const top = (containerRect.height - img.height) / 2;
+                const left = 100;
+                const top = 100;
                 img.style.left = `${left}px`;
                 img.style.top = `${top}px`;
-                
+
                 // 绑定事件监听
                 img.addEventListener('mousedown', startDrag);
                 img.addEventListener('touchstart', startDrag);
-                
+
                 document.getElementById('canvas-container').appendChild(img);
             };
             img.src = imageSrc;
@@ -92,7 +95,7 @@
             updateContainerRect();
             dragState.isDragging = true;
             dragState.currentElement = e.target;
-            
+
             // 处理触摸事件
             if (e.type === 'touchstart') {
                 e.preventDefault();
@@ -102,11 +105,11 @@
                 dragState.startX = e.clientX - containerRect.left;
                 dragState.startY = e.clientY - containerRect.top;
             }
-            
+
             // 记录元素初始位置
             dragState.elementX = parseFloat(dragState.currentElement.style.left);
             dragState.elementY = parseFloat(dragState.currentElement.style.top);
-            
+
             // 绑定移动事件
             document.addEventListener('mousemove', doDrag);
             document.addEventListener('touchmove', doDrag);
@@ -117,7 +120,7 @@
         // 执行拖拽
         function doDrag(e) {
             if (!dragState.isDragging) return;
-            
+
             let clientX, clientY;
             if (e.type === 'touchmove') {
                 clientX = e.touches[0].clientX - containerRect.left;
@@ -126,19 +129,19 @@
                 clientX = e.clientX - containerRect.left;
                 clientY = e.clientY - containerRect.top;
             }
-            
+
             // 计算偏移量
             const deltaX = clientX - dragState.startX;
             const deltaY = clientY - dragState.startY;
-            
+
             // 更新元素位置
             const newX = dragState.elementX + deltaX;
             const newY = dragState.elementY + deltaY;
-            
+
             // 边界检测
             const maxX = containerRect.width - dragState.currentElement.offsetWidth;
             const maxY = containerRect.height - dragState.currentElement.offsetHeight;
-            
+
             dragState.currentElement.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
             dragState.currentElement.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
         }
@@ -147,7 +150,7 @@
         function endDrag() {
             dragState.isDragging = false;
             dragState.currentElement = null;
-            
+
             // 移除事件监听
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('touchmove', doDrag);
@@ -158,11 +161,11 @@
         window.addEventListener('resize', updateContainerRect);
 
         // 文件上传处理
-        document.getElementById('imageInput').addEventListener('change', function(e) {
+        document.getElementById('imageInput').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     addImageToCanvas(event.target.result);
                 };
                 reader.readAsDataURL(file);
@@ -183,4 +186,5 @@
         }
     </script>
 </body>
+
 </html>
