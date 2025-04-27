@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Canvas Image Export</title>
+    <title>可拖拽图片画布</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         #canvas-container {
@@ -11,20 +10,23 @@
             border: 2px dashed #ccc;
             margin: 20px auto;
             position: relative;
+            overflow: hidden;
         }
-
+        
         .draggable-image {
             position: absolute;
             max-width: 200px;
             max-height: 200px;
             cursor: move;
+            user-select: none;
+            touch-action: none; /* 防止触摸干扰 */
         }
-
+        
         .controls {
             text-align: center;
             margin: 20px;
         }
-
+        
         button {
             padding: 10px 20px;
             margin: 0 10px;
@@ -34,156 +36,151 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
-        .draggable-image {
-            position: absolute;
-            max-width: 200px;
-            max-height: 200px;
-            cursor: move;
-            user-select: none;
-            /* 新增：防止拖拽时选中图片 */
-        }
     </style>
 </head>
-
 <body>
     <div class="controls">
         <input type="file" id="imageInput" accept="image/*" hidden>
         <button onclick="document.getElementById('imageInput').click()">添加图片</button>
         <button onclick="exportCanvas()">导出图片</button>
     </div>
-
+    
     <div id="canvas-container"></div>
 
     <script>
-        // 新增拖拽功能相关变量
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-        let selectedElement = null;
+        // 拖拽系统状态管理
+        let dragState = {
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            elementX: 0,
+            elementY: 0,
+            currentElement: null
+        };
 
-        // 新增：拖拽事件处理
-        function handleMouseDown(e) {
-            if (e.target.classList.contains('draggable-image')) {
-                selectedElement = e.target;
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
+        // 容器位置缓存
+        let containerRect = null;
 
-                if (selectedElement !== null) {
-                    isDragging = true;
-
-                    // 获取元素初始位置
-                    const rect = selectedElement.getBoundingClientRect();
-                    currentX = rect.left;
-                    currentY = rect.top;
-                }
-            }
+        // 更新容器位置（窗口resize时需要重新获取）
+        function updateContainerRect() {
+            containerRect = document.getElementById('canvas-container').getBoundingClientRect();
         }
 
-        function handleMouseMove(e) {
-            if (isDragging && selectedElement) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-
-                xOffset = currentX;
-                yOffset = currentY;
-
-                setTranslate(currentX, currentY, selectedElement);
-            }
-        }
-
-        function handleMouseUp() {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-            selectedElement = null;
-        }
-
-        function setTranslate(xPos, yPos, el) {
-            el.style.left = xPos + 'px';
-            el.style.top = yPos + 'px';
-        }
-
-        // 在图片加载完成后绑定事件
+        // 图片加载与定位
         function addImageToCanvas(imageSrc) {
             const img = new Image();
-            img.onload = function () {
+            img.onload = function() {
                 img.classList.add('draggable-image');
-                img.style.left = '50px';
-                img.style.top = '50px';
-
-                // 添加事件监听
-                img.addEventListener('mousedown', handleMouseDown);
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-
+                
+                // 初始居中定位
+                const left = (containerRect.width - img.width) / 2;
+                const top = (containerRect.height - img.height) / 2;
+                img.style.left = `${left}px`;
+                img.style.top = `${top}px`;
+                
+                // 绑定事件监听
+                img.addEventListener('mousedown', startDrag);
+                img.addEventListener('touchstart', startDrag);
+                
                 document.getElementById('canvas-container').appendChild(img);
             };
             img.src = imageSrc;
         }
 
-        // 图片上传处理
-        document.getElementById('imageInput').addEventListener('change', function (e) {
+        // 开始拖拽
+        function startDrag(e) {
+            updateContainerRect();
+            dragState.isDragging = true;
+            dragState.currentElement = e.target;
+            
+            // 处理触摸事件
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+                dragState.startX = e.touches[0].clientX - containerRect.left;
+                dragState.startY = e.touches[0].clientY - containerRect.top;
+            } else {
+                dragState.startX = e.clientX - containerRect.left;
+                dragState.startY = e.clientY - containerRect.top;
+            }
+            
+            // 记录元素初始位置
+            dragState.elementX = parseFloat(dragState.currentElement.style.left);
+            dragState.elementY = parseFloat(dragState.currentElement.style.top);
+            
+            // 绑定移动事件
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('touchmove', doDrag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+
+        // 执行拖拽
+        function doDrag(e) {
+            if (!dragState.isDragging) return;
+            
+            let clientX, clientY;
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX - containerRect.left;
+                clientY = e.touches[0].clientY - containerRect.top;
+            } else {
+                clientX = e.clientX - containerRect.left;
+                clientY = e.clientY - containerRect.top;
+            }
+            
+            // 计算偏移量
+            const deltaX = clientX - dragState.startX;
+            const deltaY = clientY - dragState.startY;
+            
+            // 更新元素位置
+            const newX = dragState.elementX + deltaX;
+            const newY = dragState.elementY + deltaY;
+            
+            // 边界检测
+            const maxX = containerRect.width - dragState.currentElement.offsetWidth;
+            const maxY = containerRect.height - dragState.currentElement.offsetHeight;
+            
+            dragState.currentElement.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
+            dragState.currentElement.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
+        }
+
+        // 结束拖拽
+        function endDrag() {
+            dragState.isDragging = false;
+            dragState.currentElement = null;
+            
+            // 移除事件监听
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('touchmove', doDrag);
+        }
+
+        // 初始化容器尺寸
+        updateContainerRect();
+        window.addEventListener('resize', updateContainerRect);
+
+        // 文件上传处理
+        document.getElementById('imageInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function (event) {
+                reader.onload = function(event) {
                     addImageToCanvas(event.target.result);
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // 添加图片到画布
-        function addImageToCanvas(imageSrc) {
-            const img = new Image();
-            img.onload = function () {
-                img.classList.add('draggable-image');
-                img.style.left = '50px';
-                img.style.top = '50px';
-                document.getElementById('canvas-container').appendChild(img);
-            };
-            img.src = imageSrc;
-        }
-
-        // 导出为图片
+        // 导出功能
         function exportCanvas() {
             html2canvas(document.querySelector("#canvas-container"), {
-                allowTaint: true,
                 useCORS: true,
-                scale: 2 // 提高导出图片分辨率
+                scale: 2
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'exported-image.png';
-                link.href = canvas.toDataURL('image/png');
+                link.download = 'canvas-export.png';
+                link.href = canvas.toDataURL();
                 link.click();
             });
         }
-
-        // 拖放功能
-        const container = document.getElementById('canvas-container');
-
-        container.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
-
-        container.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    addImageToCanvas(event.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
     </script>
 </body>
-
 </html>
