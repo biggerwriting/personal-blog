@@ -16,7 +16,8 @@
 
         .element {
             position: absolute;
-            border: 1px dashed #999;
+            border: 1px dashed transparent;
+            /* 修改为默认透明边框 */
             cursor: move;
         }
 
@@ -97,19 +98,24 @@
 
         // 选择元素
         function selectElement(element) {
+            // 取消当前选中元素的边框
             if (selectedElement) {
-                selectedElement.style.border = '1px dashed #999';
+                selectedElement.style.border = '1px dashed transparent'; // 取消选中时恢复透明
             }
+            // 设置新选中元素
             selectedElement = element;
-            element.style.border = '2px solid #09f';
+            if (element) {
+                element.style.border = '2px solid #09f'; // 只有选中时才显示边框
+            }
         }
 
         // 开始拖动
         function startDrag(e) {
             if (e.target.className === 'resize-handle') return;
 
+            selectElement(e.currentTarget); // 确保拖动时元素被选中
             isDragging = true;
-            selectedElement = e.currentTarget;
+            // selectedElement = e.currentTarget;
             startX = e.clientX;
             startY = e.clientY;
             document.addEventListener('mousemove', drag);
@@ -165,7 +171,6 @@
         document.getElementById('canvas').addEventListener('click', function (e) {
             if (e.target === this) {
                 if (selectedElement) {
-                    selectedElement.style.border = '1px dashed #999';
                     selectedElement = null;
                 }
             }
